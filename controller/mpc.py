@@ -23,16 +23,18 @@ class MPCController:
         self.ddelta_max = mpc_cfg.ddelta_max
 
     # ───────────────────────── 核心 ─────────────────────────
-    def solve(self, x0, kappa_seq, vx, delta_prev=0.0, pending=None):
+    def solve(self, x0, kappa_seq, vx, delta_prev=0.0, pending=None, d_est=None):
         n,m,Np,Nc= self.n, self.m, self.Np, self.Nc
         self.model.update_vx(vx)
 
         Ad = self.model.Ad
         Bd = self.model.Bd
+        if d_est is None:
+             d_est = np.zeros(self.n)
         x_pred = x0.copy()
         if pending is not None:
             for i in range(self.Nd):
-                x_pred = Ad @ x_pred + Bd[:,0]*pending[i] +Bd[:,1] * (vx * kappa_seq[i])
+                x_pred = Ad @ x_pred + Bd[:,0]*pending[i] +Bd[:,1] * (vx * kappa_seq[i]) + d_est
 
         x = cp.Variable((n,Np+1), name='x')
         u = cp.Variable((1,Nc), name='u') 
@@ -40,10 +42,10 @@ class MPCController:
         constraints = [ x[:,0] == x_pred ]
         cost = 0
         for k in range (Np):
-
+            
             psi_des = vx * kappa_seq[k]
             uk = u[0,min(k,self.Nc-1)]
-            constraints += [ x[:,k+1] == Ad @ x[:,k] + Bd[:,0] * uk + Bd[:,1] * psi_des]
+            constraints += [ x[:,k+1] == Ad @ x[:,k] + Bd[:,0] * uk + Bd[:,1] * psi_des +d_est]
             cost += cp.quad_form(x[:,k],self.Q) + self.R[0,0] * cp.square(uk)
             
             constraints += [cp.abs(uk) <= self.delta_max]
