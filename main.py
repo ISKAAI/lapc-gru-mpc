@@ -15,7 +15,7 @@ delay_buffer = [0.0] * Nd
 
 #initial position and ref
 kappa_full = np.zeros(N_sim +Np)
-s = np.arange(N_sim+Np)
+s = np.arange(N_sim+Np+Nd)
 kappa_full = 0.01 * np.sin(0.05 * s) 
 delta = 0
 x_true = np.array([0.5,0.,0.,0.])
@@ -25,7 +25,7 @@ log_x, log_u, log_d = [], [], []
 np.random.seed(0)
 sigma = np.array([0.02,0.01,0.01,0.01])
 
-#kalmer
+#kalmen
 C = np.eye(4)
 R_kf = np.diag(sigma**2)
 Q_kf = np.diag([1e-4,1e-4,1e-4,1e-4])
@@ -54,10 +54,11 @@ for k in range(N_sim):
     z_est = kf.update(x_meas)
     x_est = z_est[:4]
     d_scalar = z_est[4]
-    d_feed = E.flatten() * d_scalar
+    d_seq = np.tile(E.flatten() * d_scalar, (Nd + Np, 1))
 
-    kappa_seq = kappa_full[k:k+Np]
-    delta = mpc.solve(x_est,kappa_seq,vx,delta,pending=delay_buffer,d_est=d_feed)
+
+    kappa_seq = kappa_full[k:k+Np+Nd]
+    delta = mpc.solve(x_est,kappa_seq,vx,delta,pending=delay_buffer,d_seq=d_seq)
 
     applied = delay_buffer.pop(0)
     delay_buffer.append(delta)

@@ -41,8 +41,10 @@ for epoch in range(50):
     with torch.no_grad():
         preds = torch.cat([model(xb.to(device)).cpu() for xb, _ in val_loader])
         targs = torch.cat([yb for _, yb in val_loader])
-        per_step = ((preds - targs)**2).mean(dim=0)    # (20,) 每步MSE
-    print("每步MSE:", per_step.numpy().round(5))
+        per_step = ((preds - targs)**2).mean(dim=0)    # (Np,) 每步MSE
+    val_losses.append(per_step.mean().item())          # 记录平均每步MSE, 供画图/打印
+    last_per_step = per_step.numpy()                    # 留给下面的基线对比
+    print("每步MSE(增量):", last_per_step.round(6))
 
 # 画图
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
@@ -50,11 +52,15 @@ plt.plot(train_losses, label="train"); plt.plot(val_losses, label="val")
 plt.legend(); plt.grid(); plt.xlabel("epoch"); plt.ylabel("MSE")
 plt.savefig("loss.png"); print("saved loss.png")
 
-# 基线1: 预测全0 → MSE = 目标的方差
-import numpy as np
-data = np.load("processed/dataset.npz")
-Yva = data["Yva"]
-baseline_zero = (Yva**2).mean()                          # 预测0的MSE
-baseline_persist = ((Yva[:,1:] - Yva[:,:-1])**2).mean()  # 预测"保持不变"的MSE(粗略)
-print("基线-预测0:", baseline_zero, " 基线-持平:", baseline_persist)
-print("GRU val_loss:", val_losses[-1])
+# 基线对比: Yva 现在是"相对窗口末端 d_last 的增量"
+#   在增量空间里, 持久化前馈 <=> 预测增量恒为 0, 其每步MSE = 增量的方差.
+#   => GRU 只要每步 MSE 低于该基线, 就是真正跑赢了持久化.
+Yva = data["Yva"]                              # 增量目标
+base_persist = (Yva**2).mean(axis=0)           # 持久化(预测Δ=0) 每步MSE
+print("持久化(预测Δ=0) 每步MSE:", base_persist.round(6))
+print("GRU(学增量)     每步MSE:", last_per_step.round(6))
+improve = 1.0 - last_per_step / base_persist   # >0 表示比持久化好, 数值=相对降幅
+print("每步相对持久化降幅:", (improve*100).round(1), "%   (正=赢, 负=没赢)")
+print("平均: GRU=%.6f  持久化=%.6f  ->  %s" % (
+      last_per_step.mean(), base_persist.mean(),
+      "GRU 赢 √" if last_per_step.mean() < base_persist.mean() else "没赢 ×"))

@@ -11,7 +11,7 @@ class VehicleConfig:
     Caf: float = 194129.0
     Car: float = 239985.0
     steering_ratio: float = 15.615
-    Ts: float = 0.02      
+    Ts: float = 0.05      
 
 
 @dataclass

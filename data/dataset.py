@@ -18,8 +18,8 @@ def make_windows(F, target, W, Np):
     X, Y = [], []
     M = len(F)
     for k in range(W, M - Np):
-        X.append(F[k - W:k])          # 过去 W 步
-        Y.append(target[k:k + Np])    # 未来 Np 步
+        X.append(F[k - W:k])                      # 过去 W 步
+        Y.append(target[k:k + Np] - target[k-1])  # 未来 Np 步"相对窗口末端 d_last 的增量"
     return np.array(X), np.array(Y)
 
 

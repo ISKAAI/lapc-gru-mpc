@@ -1,5 +1,6 @@
 import os
 import sys
+import pandas as pd
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
@@ -12,8 +13,8 @@ import extract, matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as p
 from scipy.signal import savgol_filter
 
 def compute_feature(seg,VehicleConfig):
-    e1 = seg["c0"]
-    e2 = seg["c1"]
+    e1 = -seg["c0"]
+    e2 = -seg["c1"]
     k = 2*seg["c2"]
     U = seg["steer"] / VehicleConfig.steering_ratio
     e1_dot = np.gradient(e1,DT)
@@ -33,8 +34,8 @@ def compute_disturbance(feat,model):
         d[k] = x[k+1] - x_pred
     return d
 
-def smooth_disturbance(d,window=11, poly=2):
-    return savgol_filter(d, window, poly, axis=0)
+def smooth_disturbance(d,span=11):
+    return pd.DataFrame(d).ewm(span=span).mean().to_numpy()
 
 if __name__ == "__main__":
     seg = extract.extract_file("/Users/kai/project/train/lcc/xcp_2026-06-10_16-27-04.MF4")[0]
