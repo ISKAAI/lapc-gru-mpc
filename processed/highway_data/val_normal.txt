@@ -1,0 +1,12 @@
+/Users/kai/project/train/data/2026_7_16/正常/xcp_2026-07-16_16-09-55.MF4
+/Users/kai/project/train/data/2026_7_16/正常/xcp_2026-07-16_16-13-07.MF4
+/Users/kai/project/train/data/2026_7_16/正常/xcp_2026-07-16_16-14-39.MF4
+/Users/kai/project/train/data/2026_7_16/正常/xcp_2026-07-16_16-16-05.MF4
+/Users/kai/project/train/data/2026_7_16/正常/xcp_2026-07-16_16-19-37.MF4
+/Users/kai/project/train/data/2026_7_16/正常/xcp_2026-07-16_16-21-14.MF4
+/Users/kai/project/train/data/2026_7_16/正常/xcp_2026-07-16_16-23-17.MF4
+/Users/kai/project/train/data/2026_7_16/正常/xcp_2026-07-16_16-26-13.MF4
+/Users/kai/project/train/data/2026_7_16/正常/xcp_2026-07-16_16-27-12.MF4
+/Users/kai/project/train/data/2026_7_16/正常/xcp_2026-07-16_16-29-39.MF4
+/Users/kai/project/train/data/2026_7_16/正常/xcp_2026-07-16_16-34-03.MF4
+/Users/kai/project/train/data/2026_7_16/正常/xcp_2026-07-16_16-35-23.MF4

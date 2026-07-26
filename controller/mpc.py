@@ -29,9 +29,21 @@ class MPCController:
 
         Ad = self.model.Ad
         Bd = self.model.Bd
+        delay_steps = self.Nd if pending is not None else 0
+        required = delay_steps + self.Np
+        kappa_seq = np.asarray(kappa_seq, dtype=float).reshape(-1)
+        if len(kappa_seq) < required:
+            raise ValueError(
+                f"kappa_seq needs at least {required} values "
+                f"(delay={delay_steps}, horizon={self.Np}), got {len(kappa_seq)}"
+            )
+        if pending is not None and len(pending) != self.Nd:
+            raise ValueError(f"pending needs {self.Nd} delayed commands, got {len(pending)}")
         if d_seq is None:
-             d_seq = np.zeros((self.Nd + self.Np, self.n))
-        d_seq = np.asarray(d_seq)
+             d_seq = np.zeros((required, self.n))
+        d_seq = np.asarray(d_seq, dtype=float)
+        if d_seq.shape[0] < required or d_seq.shape[1:] != (self.n,):
+            raise ValueError(f"d_seq needs shape ({required}, {self.n}), got {d_seq.shape}")
         x_pred = x0.copy()
         if pending is not None:
             for i in range(self.Nd):
@@ -44,9 +56,10 @@ class MPCController:
         cost = 0
         for k in range (Np):
 
-            psi_des = vx * kappa_seq[k+self.Nd]
+            sequence_index = k + delay_steps
+            psi_des = vx * kappa_seq[sequence_index]
             uk = u[0,min(k,self.Nc-1)]
-            constraints += [ x[:,k+1] == Ad @ x[:,k] + Bd[:,0] * uk + Bd[:,1] * psi_des +d_seq[k+self.Nd]]
+            constraints += [ x[:,k+1] == Ad @ x[:,k] + Bd[:,0] * uk + Bd[:,1] * psi_des +d_seq[sequence_index]]
             cost += cp.quad_form(x[:,k],self.Q) + self.R[0,0] * cp.square(uk)
             
             constraints += [cp.abs(uk) <= self.delta_max]
@@ -63,5 +76,4 @@ class MPCController:
         if prob.status not in ('optimal','optimal_inaccurate'):
              return delta_prev
         return u.value[0,0]
-
 

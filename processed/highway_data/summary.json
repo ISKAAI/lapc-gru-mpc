@@ -1,0 +1,28 @@
+{
+  "data_root": "/Users/kai/project/train/data",
+  "mf4_files": 263,
+  "unique_hashes": 260,
+  "source_labels": {
+    "abnormal": 108,
+    "normal": 153,
+    "unlabelled": 2
+  },
+  "splits": {
+    "stress_dev": 69,
+    "train_normal": 65,
+    "val_normal": 12,
+    "stress_final": 13,
+    "test_normal": 19
+  },
+  "excluded": {
+    "no_eligible_lcc_segment": 79,
+    "hash_label_conflict": 6
+  },
+  "split_eligible_samples": {
+    "train_normal": 66766,
+    "val_normal": 17389,
+    "test_normal": 23022,
+    "stress_dev": 60319,
+    "stress_final": 15279
+  }
+}

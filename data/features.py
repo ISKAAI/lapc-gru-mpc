@@ -9,15 +9,26 @@ import numpy as np
 from data.channels import DT
 from config import VehicleConfig
 from model.bicycle_model import BicycleModel
-import extract, matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt 
-from scipy.signal import savgol_filter
 
-def compute_feature(seg,VehicleConfig):
+def causal_filtered_derivative(values, dt=DT, tau=0.15):
+    """Backward difference followed by a causal first-order low-pass filter."""
+    values = np.asarray(values, dtype=float)
+    raw = np.diff(values, prepend=values[0]) / dt
+    alpha = dt / (tau + dt)
+    filtered = np.empty_like(raw)
+    filtered[0] = raw[0]
+    for index in range(1, len(raw)):
+        filtered[index] = alpha * raw[index] + (1.0 - alpha) * filtered[index - 1]
+    return filtered
+
+
+def compute_feature(seg, vehicle_config):
     e1 = -seg["c0"]
     e2 = -seg["c1"]
     k = 2*seg["c2"]
-    U = seg["steer"] / VehicleConfig.steering_ratio
-    e1_dot = np.gradient(e1,DT)
+    U = seg["steer"] / vehicle_config.steering_ratio
+    # Online-reproducible: never reads e1[k+1] to construct the feature at k.
+    e1_dot = causal_filtered_derivative(e1)
     e2_dot = seg["yaw_rate"] - seg["vx"] * k
 
     x = np.stack([e1, e1_dot, e2, e2_dot], axis=1)
@@ -38,6 +49,11 @@ def smooth_disturbance(d,span=11):
     return pd.DataFrame(d).ewm(span=span).mean().to_numpy()
 
 if __name__ == "__main__":
+    import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
+    try:
+        from data import extract
+    except ModuleNotFoundError:
+        import extract
     seg = extract.extract_file("/Users/kai/project/train/lcc/xcp_2026-06-10_16-27-04.MF4")[0]
     f = compute_feature(seg, VehicleConfig())
     model = BicycleModel(VehicleConfig(Ts=0.05), 10.0)

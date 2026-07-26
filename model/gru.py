@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class DisturbanceGRU(nn.Module):
-    def __init__(self, n_feat=6, hidden=32, horizon=5):
+    def __init__(self, n_feat=7, hidden=32, horizon=25):
         super().__init__()
         self.gru = nn.GRU(n_feat, hidden, batch_first=True)
         self.head = nn.Linear(hidden,horizon)
@@ -14,6 +14,6 @@ class DisturbanceGRU(nn.Module):
 
 if __name__ == "__main__":
     model = DisturbanceGRU()
-    x = torch.randn(4,20,6)
+    x = torch.randn(4,25,7)
     y = model(x)
     print(y.shape)

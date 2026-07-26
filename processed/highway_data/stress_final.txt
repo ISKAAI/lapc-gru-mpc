@@ -1,0 +1,13 @@
+/Users/kai/project/train/data/2026_7_17测试数据/异常/9kph tja或lcc功能退出/xcp_2026-07-17_18-07-46.MF4
+/Users/kai/project/train/data/2026_7_17测试数据/异常/acc左弯40kphcutin未减速/xcp_2026-07-17_18-22-06.MF4
+/Users/kai/project/train/data/2026_7_17测试数据/异常/alc fn 夜晚有灯/xcp_2026-07-17_19-06-08.MF4
+/Users/kai/project/train/data/2026_7_17测试数据/异常/alc100kph右后方危险变道/xcp_2026-07-17_18-29-28.MF4
+/Users/kai/project/train/data/2026_7_17测试数据/异常/alc左后测100kph危险变道/xcp_2026-07-17_18-16-33.MF4
+/Users/kai/project/train/data/2026_7_17测试数据/异常/alc左后测危险变道/xcp_2026-07-17_18-17-30.MF4
+/Users/kai/project/train/data/2026_7_17测试数据/异常/alc左后测危险变道2/xcp_2026-07-17_18-19-44.MF4
+/Users/kai/project/train/data/2026_7_17测试数据/异常/alc迟缓变道/xcp_2026-07-17_18-26-03.MF4
+/Users/kai/project/train/data/2026_7_17测试数据/异常/lcc 100kph进弯道未减速/xcp_2026-07-17_18-39-02.MF4
+/Users/kai/project/train/data/2026_7_17测试数据/异常/lcc 55-80kph 左弯内切/xcp_2026-07-17_18-35-45.MF4
+/Users/kai/project/train/data/2026_7_17测试数据/异常/lcc大半径弯道80kph内切/xcp_2026-07-17_19-04-50.MF4
+/Users/kai/project/train/data/2026_7_17测试数据/异常/lcc左弯115kph超调/xcp_2026-07-17_18-55-42.MF4
+/Users/kai/project/train/data/2026_7_17测试数据/异常/lcc弯道减速偏慢，50kph弯道外切/xcp_2026-07-17_18-50-30.MF4

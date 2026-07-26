@@ -1,6 +1,10 @@
 import numpy as np
 from asammdf import MDF
-from channels import CHANNELS, DT
+
+try:
+    from data.channels import CHANNELS, DT
+except ModuleNotFoundError:  # Allow: python data/extract.py
+    from channels import CHANNELS, DT
 
 
 def read_signals(path):
@@ -8,6 +12,9 @@ def read_signals(path):
     sig = {}
     for name, chan in CHANNELS.items():
         sig[name] = np.asarray(m.get(chan,group = 1).samples, dtype = float)
+    lengths = {len(values) for values in sig.values()}
+    if len(lengths) != 1:
+        raise ValueError(f"MF4 channels have inconsistent lengths: {path} -> {sorted(lengths)}")
     return sig
 
 def split_activate_segments(active):
@@ -32,12 +39,14 @@ def extract_file(path, trim=20, min_len=100, settle_thr=0.5):
     active = (sig["lcc_active"] !=0) & (sig["alc_active"] == 0)
     segs = []
     for s, e in split_activate_segments(active):
-        seg = {k: v[s:e] for k, v in sig.items()}       
-        seg = {k: v[:-trim] for k, v in seg.items()}    
-        idx = np.where(np.abs(seg["c0"]) < settle_thr)[0]
+        stop = max(s, e - trim) if trim > 0 else e
+        seg = {k: v[s:stop] for k, v in sig.items()}
+        if len(seg["c0"]) == 0:
+            continue
         jump = np.where(np.abs(np.diff(seg["c0"])) > 0.15)[0]
         if len(jump) > 0:
-            seg = {k:v[:jump[0]+1] for k, v in seg.items()} 
+            seg = {k:v[:jump[0]+1] for k, v in seg.items()}
+        idx = np.where(np.abs(seg["c0"]) < settle_thr)[0]
         if len(idx) == 0:
             continue
         seg = {k: v[idx[0]:] for k, v in seg.items()}   
