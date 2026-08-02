@@ -4,14 +4,33 @@ from config import VehicleConfig, MPCConfig
 from model.bicycle_model import BicycleModel
 from controller.mpc import MPCController
 from controller.kalman import KalmanFilter
+from controller.gru_observer import GRUObserver
+from pathlib import Path
+
 vx = 15
 N_sim = 100
 #mpc
-model = BicycleModel(VehicleConfig(),vx)
-mpc = MPCController(model,MPCConfig())
+mpc_model = BicycleModel(VehicleConfig(),vx)
+mpc = MPCController(mpc_model,MPCConfig())
 Np = mpc.Np
 Nd = mpc.cfg.Nd
 delay_buffer = [0.0] * Nd
+
+#gru
+project_root = Path(__file__).resolve().parent
+checkpoint_path = (
+    project_root
+    /"processed"
+    /"combined_gru_h25"
+    /"best_model.pt"
+)
+residual_model = BicycleModel(VehicleConfig(),vx)
+observer = GRUObserver(
+    checkpoint_path=checkpoint_path,
+    residual_model=residual_model,
+    device="cpu",
+    smooth_span=11)
+
 
 #initial position and ref
 kappa_full = np.zeros(N_sim +Np)
@@ -38,8 +57,8 @@ d_true = np.array([0.0,0.05,0.0,0.0])
 E = np.array([[0.],[1.],[0.],[0.]])
 I4 = np.eye(4)
 
-Ad_aug = np.block([[model.Ad,E],[np.zeros((1,4)),np.ones((1,1))]])
-Bd_aug = np.block([[model.Bd],[np.zeros((1,2))]])
+Ad_aug = np.block([[mpc_model.Ad,E],[np.zeros((1,4)),np.ones((1,1))]])
+Bd_aug = np.block([[mpc_model.Bd],[np.zeros((1,2))]])
 C_aug = np.block([I4,np.zeros((4,1))])
 Q_aug = np.eye(5)*1e-4
 Q_aug[4:,4:] *= 100
@@ -63,7 +82,7 @@ for k in range(N_sim):
     applied = delay_buffer.pop(0)
     delay_buffer.append(delta)
 
-    Ad, Bd = model.Ad,model.Bd
+    Ad, Bd = mpc_model.Ad,mpc_model.Bd
     x_true = Ad @ x_true + Bd[:,0]*applied + Bd[:,1] * ( vx * kappa_full[k]) + np.array([0.,0.05*np.sin(0.1*k),0.,0.])
     log_x.append(x_true)
     log_u.append(applied)
